@@ -4,7 +4,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_EMAIL || 'christina@makelab.com'
-const APP_URL = process.env.URL || 'https://time.makelab.com'
+const APP_URL = process.env.URL || 'https://teammanagement.makelab.com'
 const FROM_EMAIL = process.env.REMINDER_FROM_EMAIL || 'noreply@makelab.com'
 const FROM_NAME = 'Makelab Time Tracker'
 
