@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const DEFAULT_SCHEDULE = { days: [1, 2, 3, 4, 5], start_time: '09:00', end_time: '17:00' }
 const EMP_TYPES = ['hourly', 'salary', 'contract', 'intern']
+const ROLES = ['employee', 'manager', 'admin']
 
 export default function Employees() {
   const { isAdmin, isManager } = useAuth()
@@ -32,6 +33,7 @@ export default function Employees() {
       pay_type: 'W2',
       department: 'General',
       tracks_hours: true,
+      role: 'employee',
       schedule_days: new Set([1, 2, 3, 4, 5]),
       schedule_start: '09:00',
       schedule_end: '17:00',
@@ -90,6 +92,7 @@ export default function Employees() {
           fixed_amount: ['salary', 'contract'].includes(addForm.employee_type) ? addForm.fixed_amount : null,
           pay_type: addForm.pay_type,
           department: addForm.department,
+          role: addForm.role,
           tracks_hours: addForm.tracks_hours,
           schedule,
         }),
@@ -155,6 +158,7 @@ export default function Employees() {
       tracks_hours: emp.tracks_hours !== false,
       employee_type: emp.employee_type || 'hourly',
       department: emp.department || 'General',
+      role: emp.role || 'employee',
       fixed_amount: emp.fixed_amount || '',
       schedule_days: new Set(sched.days || [1, 2, 3, 4, 5]),
       schedule_start: sched.start_time || '09:00',
@@ -197,6 +201,7 @@ export default function Employees() {
           tracks_hours: form.tracks_hours,
           employee_type: form.employee_type,
           department: form.department,
+          role: form.role,
           fixed_amount: ['salary', 'contract'].includes(form.employee_type) ? Number(form.fixed_amount) || null : null,
           schedule,
         })
@@ -299,6 +304,14 @@ export default function Employees() {
                     <label className="input-label">Department</label>
                     <input className="input" value={form.department} onChange={e => setForm({ ...form, department: e.target.value })} />
                   </div>
+                  {canSeePay && (
+                    <div>
+                      <label className="input-label">Role</label>
+                      <select className="input" value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
+                        {ROLES.map(r => <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
+                      </select>
+                    </div>
+                  )}
                 </div>
                 {canSeePay && (
                   <div className="input-row" style={{ marginBottom: 8 }}>
@@ -363,6 +376,11 @@ export default function Employees() {
                     <span className={`emp-type-badge ${emp.employee_type || 'hourly'}`}>
                       {emp.employee_type || 'hourly'}
                     </span>
+                    {emp.role && emp.role !== 'employee' && (
+                      <span className="emp-type-badge" style={{ background: emp.role === 'admin' ? '#f5a623' : '#4a90d9', color: '#fff' }}>
+                        {emp.role}
+                      </span>
+                    )}
                     {emp.tracks_hours === false && (
                       <span className="emp-type-badge" style={{ background: '#666', color: '#fff' }}>no time tracking</span>
                     )}
@@ -469,6 +487,12 @@ export default function Employees() {
               <div>
                 <label className="input-label">Department</label>
                 <input className="input" value={addForm.department} onChange={e => setAddForm({ ...addForm, department: e.target.value })} placeholder="General" />
+              </div>
+              <div>
+                <label className="input-label">Role</label>
+                <select className="input" value={addForm.role} onChange={e => setAddForm({ ...addForm, role: e.target.value })}>
+                  {ROLES.map(r => <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
+                </select>
               </div>
             </div>
             <div className="input-row" style={{ marginBottom: 8 }}>
