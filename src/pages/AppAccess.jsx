@@ -11,6 +11,7 @@ const APP_SLUGS = [
   { slug: 'marketing-map', label: 'Mktg Map' },
   { slug: 'brand-bible', label: 'Brand Bible' },
   { slug: 'tools', label: 'Tools' },
+  { slug: 'mission-control', label: 'Mission Ctrl' },
 ]
 
 const ROLES = ['admin', 'manager', 'employee']
