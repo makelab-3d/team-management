@@ -373,16 +373,10 @@ export default function Employees() {
                   <div className="admin-emp-name">
                     {emp.full_name}
                     {emp.title && <span className="admin-emp-title-pill">{emp.title}</span>}
-                    <span className={`emp-type-badge ${emp.employee_type || 'hourly'}`}>
-                      {emp.employee_type || 'hourly'}
-                    </span>
                     {emp.role && emp.role !== 'employee' && (
                       <span className="emp-type-badge" style={{ background: emp.role === 'admin' ? '#f5a623' : '#4a90d9', color: '#fff' }}>
                         {emp.role}
                       </span>
-                    )}
-                    {emp.tracks_hours === false && (
-                      <span className="emp-type-badge" style={{ background: '#666', color: '#fff' }}>no time tracking</span>
                     )}
                   </div>
                   <div className="admin-emp-meta">
@@ -390,7 +384,8 @@ export default function Employees() {
                     {canSeePay && <> &middot; {renderPayInfo(emp)} &middot; {emp.pay_type || 'W2'}</>}
                   </div>
                   <div className="admin-emp-meta">
-                    {emp.department || 'General'} &middot; {formatScheduleBrief(emp)}
+                    {emp.department || 'General'} &middot; {emp.employee_type || 'hourly'} &middot; {formatScheduleBrief(emp)}
+                    {emp.tracks_hours === false && <> &middot; no time tracking</>}
                   </div>
                 </div>
                 <span className={`admin-emp-status ${emp.is_active !== false ? 'active' : 'inactive'}`}>
