@@ -24,6 +24,7 @@ export default function AppAccess() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(null)
   const [tab, setTab] = useState('users')
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     if (isAdmin) loadData()
@@ -31,17 +32,27 @@ export default function AppAccess() {
 
   async function loadData() {
     setLoading(true)
-    const session = await supabase.auth.getSession()
-    const token = session.data.session?.access_token
-    const res = await fetch('/.netlify/functions/manage-access', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ action: 'get_all' }),
-    })
-    const data = await res.json()
-    setEmployees(data.employees || [])
-    setPermissions(data.permissions || [])
-    setDefaults(data.defaults || [])
+    setError(null)
+    try {
+      const session = await supabase.auth.getSession()
+      const token = session.data.session?.access_token
+      const res = await fetch('/.netlify/functions/manage-access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action: 'get_all' }),
+      })
+      const data = await res.json()
+      if (data.error) {
+        setError(data.error)
+        setLoading(false)
+        return
+      }
+      setEmployees(data.employees || [])
+      setPermissions(data.permissions || [])
+      setDefaults(data.defaults || [])
+    } catch (err) {
+      setError(err.message)
+    }
     setLoading(false)
   }
 
@@ -111,7 +122,17 @@ export default function AppAccess() {
     return <div className="page-message"><div className="loading-spinner" /></div>
   }
 
-  const activeEmployees = employees.filter(e => e.is_active)
+  if (error) {
+    return (
+      <div style={{ padding: '32px 16px', textAlign: 'center' }}>
+        <h2 style={{ fontSize: 18, marginBottom: 8 }}>Error Loading Access Data</h2>
+        <p style={{ color: '#888', marginBottom: 16, fontSize: 14 }}>{error}</p>
+        <button className="btn btn-primary btn-sm" onClick={loadData}>Retry</button>
+      </div>
+    )
+  }
+
+  const activeEmployees = employees.filter(e => e.is_active !== false)
 
   return (
     <div style={{ padding: '16px 0' }}>

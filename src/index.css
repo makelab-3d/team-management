@@ -132,6 +132,9 @@ a { color: var(--accent-text); text-decoration: none; }
   transition: fill 0.15s;
 }
 
+/* Sidebar brand - hidden on mobile, shown on desktop */
+.sidebar-brand { display: none; }
+
 /* Cards */
 .card {
   background: var(--bg-card);
@@ -2020,12 +2023,105 @@ a { color: var(--accent-text); text-decoration: none; }
 }
 
 @media (min-width: 960px) {
-  .app-shell { max-width: 1100px; }
-  .bottom-nav { max-width: 1100px; }
-  .app-main { padding: 32px; padding-bottom: 32px; }
+  /* Remove narrow column — go full width */
+  .app-shell {
+    max-width: none;
+    margin-left: 200px;
+    border-left: none;
+    border-right: none;
+    box-shadow: none;
+  }
 
+  /* Header adjusts for sidebar */
+  .app-header {
+    display: none;
+  }
+
+  .app-main {
+    padding: 32px 40px;
+    padding-bottom: 32px;
+  }
+
+  /* Sidebar nav */
+  .bottom-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 200px;
+    max-width: 200px;
+    height: 100vh;
+    flex-direction: column;
+    border-bottom: none;
+    border-right: 1px solid var(--border);
+    border-top: none;
+    padding: 0;
+    gap: 0;
+    z-index: 200;
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.04);
+    overflow-y: auto;
+  }
+
+  /* Brand in sidebar */
+  .sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 20px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--text);
+  }
+
+  .sidebar-brand .app-brand {
+    font-size: 15px;
+  }
+
+  .sidebar-brand .app-title {
+    font-size: 12px;
+  }
+
+  /* Nav items in sidebar */
+  .bottom-nav-item {
+    flex: none;
+    flex-direction: row;
+    gap: 10px;
+    padding: 12px 16px;
+    font-size: 14px;
+    border-bottom: none;
+    border-left: 3px solid transparent;
+    border-radius: 0;
+    justify-content: flex-start;
+  }
+
+  .bottom-nav-item.active {
+    border-left-color: var(--accent);
+    background: rgba(0, 0, 0, 0.03);
+    border-bottom: none;
+  }
+
+  .bottom-nav-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Wider grids */
   .admin-employee-grid {
     grid-template-columns: 1fr 1fr 1fr;
   }
 
+  /* KPIs can go wider */
+  .admin-kpis {
+    max-width: 800px;
+  }
+}
+
+/* Extra-wide desktop */
+@media (min-width: 1400px) {
+  .app-main {
+    padding: 40px 60px;
+  }
+
+  .admin-employee-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
