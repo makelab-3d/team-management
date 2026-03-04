@@ -242,7 +242,6 @@ export default function Schedule() {
                   <th className="sched-name-col">Employee</th>
                   <th className="sched-title-col">Title</th>
                   <th>Shift</th>
-                  <th>Type</th>
                 </tr>
               </thead>
               <tbody>
@@ -264,9 +263,6 @@ export default function Schedule() {
                       </td>
                       <td style={{ textAlign: 'center' }}>
                         <div className="sched-shift">{getShiftLabel(emp)}</div>
-                      </td>
-                      <td style={{ textAlign: 'center' }}>
-                        <span className="sched-shift">{(emp.employee_type || 'hourly').charAt(0).toUpperCase() + (emp.employee_type || 'hourly').slice(1)}</span>
                       </td>
                     </tr>
                   ))
