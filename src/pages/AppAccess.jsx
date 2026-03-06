@@ -12,6 +12,7 @@ const APP_SLUGS = [
   { slug: 'brand-bible', label: 'Brand Bible' },
   { slug: 'tools', label: 'Tools' },
   { slug: 'mission-control', label: 'Mission Ctrl' },
+  { slug: 'huddle', label: 'Huddle' },
 ]
 
 const ROLES = ['admin', 'manager', 'employee']
