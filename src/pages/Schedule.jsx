@@ -4,12 +4,12 @@ import { useAuth } from '../context/AuthContext'
 import { getHolidayName } from '../lib/holidays'
 
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-const DEPT_COLOR_MAP = {
-  'Production': '#f3e8ff',   // purple
-  'Marketing': '#dbeafe',    // blue
-  'Leadership': '#fef9c3',   // yellow
+const DEPT_CLASS_MAP = {
+  'Production': 'dept-production',
+  'Marketing': 'dept-marketing',
+  'Leadership': 'dept-leadership',
 }
-const DEPT_COLOR_FALLBACK = '#f1f5f9' // neutral gray for unmapped departments
+const DEPT_CLASS_FALLBACK = 'dept-default'
 
 // Sort order: hourly/salary/contract first, intern last
 const TYPE_ORDER = { hourly: 0, salary: 0, contract: 0, intern: 1 }
@@ -111,9 +111,9 @@ export default function Schedule() {
     departments[dept] = sortEmployees(departments[dept])
   })
 
-  const deptColorMap = {}
+  const deptClassMap = {}
   deptNames.forEach(name => {
-    deptColorMap[name] = DEPT_COLOR_MAP[name] || DEPT_COLOR_FALLBACK
+    deptClassMap[name] = DEPT_CLASS_MAP[name] || DEPT_CLASS_FALLBACK
   })
 
   function isScheduledOn(emp, dateStr) {
@@ -202,16 +202,16 @@ export default function Schedule() {
               <tbody>
                 {deptNames.map((dept, deptIdx) => (
                   departments[dept].map((emp, empIdx) => (
-                    <tr key={emp.id} style={{ background: deptColorMap[dept] }}>
+                    <tr key={emp.id} className={deptClassMap[dept]}>
                       {empIdx === 0 && (
-                        <td className="sched-dept-label" rowSpan={departments[dept].length} style={{ background: deptColorMap[dept] }}>
+                        <td className={`sched-dept-label ${deptClassMap[dept]}`} rowSpan={departments[dept].length}>
                           <span>{dept}</span>
                         </td>
                       )}
-                      <td className="sched-name-col" style={{ background: deptColorMap[dept] }}>
+                      <td className={`sched-name-col ${deptClassMap[dept]}`}>
                         <span className="sched-emp-name">{emp.full_name}</span>
                       </td>
-                      <td className="sched-title-col" style={{ background: deptColorMap[dept] }}>
+                      <td className={`sched-title-col ${deptClassMap[dept]}`}>
                         {emp.title && <span className="sched-emp-pill">{emp.title}</span>}
                       </td>
                       {weekDates.map(d => {
@@ -258,16 +258,16 @@ export default function Schedule() {
                   const deptEmps = dailyByDept[dept]
                   if (!deptEmps?.length) return null
                   return deptEmps.map((emp, empIdx) => (
-                    <tr key={emp.id} style={{ background: deptColorMap[dept] }}>
+                    <tr key={emp.id} className={deptClassMap[dept]}>
                       {empIdx === 0 && (
-                        <td className="sched-dept-label" rowSpan={deptEmps.length} style={{ background: deptColorMap[dept] }}>
+                        <td className={`sched-dept-label ${deptClassMap[dept]}`} rowSpan={deptEmps.length}>
                           <span>{dept}</span>
                         </td>
                       )}
-                      <td className="sched-name-col" style={{ background: deptColorMap[dept] }}>
+                      <td className={`sched-name-col ${deptClassMap[dept]}`}>
                         <span className="sched-emp-name">{emp.full_name}</span>
                       </td>
-                      <td className="sched-title-col" style={{ background: deptColorMap[dept] }}>
+                      <td className={`sched-title-col ${deptClassMap[dept]}`}>
                         {emp.title && <span className="sched-emp-pill">{emp.title}</span>}
                       </td>
                       <td style={{ textAlign: 'center' }}>
