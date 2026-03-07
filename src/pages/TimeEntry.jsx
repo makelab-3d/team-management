@@ -3,20 +3,11 @@ import { useAuth } from '../context/AuthContext'
 import { usePayPeriod } from '../hooks/usePayPeriod'
 import { useTimeEntries } from '../hooks/useTimeEntries'
 import { supabase } from '../lib/supabase'
-import { getPeriodDays, formatPeriodRange, formatDateShort, formatDayShort, formatDate, isToday, isWeekend, today } from '../lib/dates'
+import { getPeriodDays, formatPeriodRange, formatDayShort, formatDate, isToday, isWeekend, today } from '../lib/dates'
 import { computeHours, formatHours, formatTime12 } from '../lib/hours'
 import { getHolidaySet, getHolidayName } from '../lib/holidays'
 
-const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-
-function getFullDate(dateStr) {
-  const d = new Date(dateStr + 'T00:00:00')
-  return {
-    dayName: DAY_NAMES[d.getDay()],
-    monthDay: `${MONTH_NAMES[d.getMonth()]} ${d.getDate()}`,
-  }
-}
 
 function getPayDate(endDateStr) {
   const d = new Date(endDateStr + 'T00:00:00')
@@ -36,7 +27,6 @@ export default function TimeEntry() {
   const [selectedPeriod, setSelectedPeriod] = useState(null)
   const [periodSummaries, setPeriodSummaries] = useState({})
 
-  // Fetch per-period hour summaries for the list view
   const fetchSummaries = useCallback(async () => {
     if (!supabase || !employee) return
     const { data } = await supabase
@@ -53,67 +43,59 @@ export default function TimeEntry() {
 
   useEffect(() => { fetchSummaries() }, [fetchSummaries])
 
-  // Auto-select the current period on first load
-  useEffect(() => {
-    if (currentPeriod && !selectedPeriod) {
-      setSelectedPeriod(currentPeriod)
-    }
-  }, [currentPeriod]) // eslint-disable-line react-hooks/exhaustive-deps
-
   if (periodLoading) {
     return <div className="text-center mt-16"><div className="loading-spinner" style={{ margin: '0 auto' }} /></div>
   }
 
-  if (!selectedPeriod) {
-    // ── Period list view ──
-    const todayStr = formatDate(new Date())
+  if (selectedPeriod) {
     return (
-      <div className="te">
-        <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Pay Periods</h2>
-        {allPeriods.length === 0 ? (
-          <div className="card text-center">
-            <p>No pay periods found.</p>
-            <p className="text-muted mt-8">Contact your admin to set up pay periods.</p>
-          </div>
-        ) : (
-          <div className="card">
-            {allPeriods.map(p => {
-              const hours = periodSummaries[p.id] || 0
-              const isCurrent = p.status === 'open' && p.start_date <= todayStr && p.end_date >= todayStr
-              return (
-                <div
-                  key={p.id}
-                  className={`admin-period-row${p.status === 'closed' ? ' is-closed' : ''}`}
-                  onClick={() => setSelectedPeriod(p)}
-                  style={{ cursor: 'pointer', flexWrap: 'wrap' }}
-                >
-                  <div style={{ flex: 1 }}>
-                    <span style={{ fontWeight: 500 }}>
-                      {formatPeriodRange(p.start_date, p.end_date)}
-                    </span>
-                    {isCurrent && <span style={{ marginLeft: 8, fontSize: 11, color: 'var(--accent)', fontWeight: 600 }}>CURRENT</span>}
-                    <div className="period-stats">
-                      <span className="period-stat"><strong>{formatHours(hours)}</strong></span>
-                    </div>
-                  </div>
-                  <span className={`period-status ${p.status}`}>{p.status}</span>
-                </div>
-              )
-            })}
-          </div>
-        )}
-      </div>
+      <PeriodDetail
+        employee={employee}
+        period={selectedPeriod}
+        isCurrent={currentPeriod?.id === selectedPeriod.id}
+        onBack={() => { setSelectedPeriod(null); fetchSummaries() }}
+      />
     )
   }
 
-  // ── Period detail view ──
+  // ── Period list view ──
+  const todayStr = formatDate(new Date())
   return (
-    <PeriodDetail
-      employee={employee}
-      period={selectedPeriod}
-      isCurrent={currentPeriod?.id === selectedPeriod.id}
-      onBack={() => { setSelectedPeriod(null); fetchSummaries() }}
-    />
+    <div className="te">
+      <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Pay Periods</h2>
+      {allPeriods.length === 0 ? (
+        <div className="card text-center">
+          <p>No pay periods found.</p>
+          <p className="text-muted mt-8">Contact your admin to set up pay periods.</p>
+        </div>
+      ) : (
+        <div className="card">
+          {allPeriods.map(p => {
+            const hours = periodSummaries[p.id] || 0
+            const isCurrent = p.status === 'open' && p.start_date <= todayStr && p.end_date >= todayStr
+            return (
+              <div
+                key={p.id}
+                className={`admin-period-row${p.status === 'closed' ? ' is-closed' : ''}`}
+                onClick={() => setSelectedPeriod(p)}
+                style={{ cursor: 'pointer', flexWrap: 'wrap' }}
+              >
+                <div style={{ flex: 1 }}>
+                  <span style={{ fontWeight: 500 }}>
+                    {formatPeriodRange(p.start_date, p.end_date)}
+                  </span>
+                  {isCurrent && <span style={{ marginLeft: 8, fontSize: 11, color: 'var(--accent)', fontWeight: 600 }}>CURRENT</span>}
+                  <div className="period-stats">
+                    <span className="period-stat"><strong>{formatHours(hours)}</strong></span>
+                  </div>
+                </div>
+                <span className={`period-status ${p.status}`}>{p.status}</span>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -133,17 +115,13 @@ function PeriodDetail({ employee, period, isCurrent, onBack }) {
   const schedule = employee?.schedule || { days: [1, 2, 3, 4, 5], start_time: '09:00', end_time: '17:00' }
   const scheduledDays = new Set(schedule.days || [])
   const holidayDates = getHolidaySet(period.start_date, period.end_date)
+  const isClosed = period.status === 'closed'
 
   function isScheduled(dateStr) {
     if (holidayDates.has(dateStr)) return false
     const day = new Date(dateStr + 'T00:00:00').getDay()
     return scheduledDays.has(day)
   }
-
-  useEffect(() => {
-    if (!period || entriesLoading) return
-    setSelectedDate(null) // reset on period change
-  }, [period?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!period || entriesLoading || selectedDate) return
@@ -188,19 +166,10 @@ function PeriodDetail({ employee, period, isCurrent, onBack }) {
   const entryMap = {}
   entries.forEach(e => { entryMap[e.work_date] = e })
 
-  const firstDate = new Date(periodDays[0] + 'T00:00:00')
-  const startDow = firstDate.getDay()
-
   const loggedCount = entries.length
   const scheduledCount = periodDays.filter(d => isScheduled(d)).length
   const remaining = Math.max(0, scheduledCount - loggedCount)
   const progress = scheduledCount > 0 ? loggedCount / scheduledCount : 0
-
-  const todayStr = today()
-  const todayEntry = entryMap[todayStr]
-  const todayInPeriod = periodDays.includes(todayStr)
-  const todayScheduled = todayInPeriod && isScheduled(todayStr)
-  const todayInfo = getFullDate(todayStr)
 
   const currentEntry = selectedDate ? entryMap[selectedDate] : null
   const preview = computeHours(startTime, endTime)
@@ -261,42 +230,17 @@ function PeriodDetail({ employee, period, isCurrent, onBack }) {
           <button className="te-reminder-x" onClick={() => setReminderDismissed(true)}>&times;</button>
         </div>
       )}
-      {/* ─── Combined Today + Progress ─── */}
-      <div className="te-today">
+
+      {/* ─── Period header + Progress ─── */}
+      <div className="te-today" style={{ marginTop: 8 }}>
         <div className="te-today-info">
-          {isCurrent ? (
-            <>
-              <div className="te-today-eyebrow">TODAY</div>
-              <div className="te-today-day">{todayInfo.dayName}</div>
-              <div className="te-today-date">{todayInfo.monthDay}</div>
-              <div className="te-today-divider" />
-              {todayInPeriod ? (
-                todayEntry ? (
-                  <div className="te-today-status te-status-logged">
-                    <svg className="te-today-check" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                    <span className="te-today-hrs">{formatHours(todayEntry.net_hours)}</span>
-                    <span className="te-today-times">{formatTime12(todayEntry.start_time)} – {formatTime12(todayEntry.end_time)}</span>
-                  </div>
-                ) : todayScheduled ? (
-                  <div className="te-today-status te-status-pending">
-                    <span className="te-today-dot" />
-                    <span>Not yet logged</span>
-                  </div>
-                ) : (
-                  <div className="te-today-status te-status-off">{getHolidayName(todayStr) || 'Day off'}</div>
-                )
-              ) : (
-                <div className="te-today-status te-status-off">Outside current period</div>
-              )}
-            </>
-          ) : (
-            <>
-              <div className="te-today-eyebrow">{period.status === 'closed' ? 'CLOSED' : 'PAST'} PERIOD</div>
-              <div className="te-today-day">{formatPeriodRange(period.start_date, period.end_date)}</div>
-            </>
-          )}
+          <div className="te-today-eyebrow">
+            {isClosed ? 'CLOSED' : isCurrent ? 'CURRENT' : 'OPEN'} PERIOD
+          </div>
+          <div className="te-today-day">{formatPeriodRange(period.start_date, period.end_date)}</div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+            Paid out {formatPayDate(getPayDate(period.end_date))}
+          </div>
         </div>
         <div className="te-today-stats">
           <div className="te-ring-wrap">
@@ -385,41 +329,50 @@ function PeriodDetail({ employee, period, isCurrent, onBack }) {
           <div className="te-entry-head">
             <span className="te-entry-date">{formatDayShort(selectedDate)}</span>
             {currentEntry && <span className="te-entry-badge">Logged</span>}
-          </div>
-
-          <div className="te-time-row">
-            <div className="te-time-block">
-              <label className="te-time-label">IN</label>
-              <input type="time" className="te-time-input" value={startTime} onChange={e => setStartTime(e.target.value)} />
-            </div>
-            <div className="te-time-arrow">&rarr;</div>
-            <div className="te-time-block">
-              <label className="te-time-label">OUT</label>
-              <input type="time" className="te-time-input" value={endTime} onChange={e => setEndTime(e.target.value)} />
-            </div>
-          </div>
-
-          {preview.net > 0 && (
-            <div className="te-hours-bar">
-              <strong>{formatHours(preview.net)}</strong>
-              {preview.breakMin > 0 && (
-                <span className="te-hours-detail">
-                  {formatHours(preview.gross)} &minus; {preview.breakMin}m lunch
-                </span>
-              )}
-            </div>
-          )}
-
-          {error && <p className="te-error">{error}</p>}
-
-          <div className="te-actions">
-            {currentEntry && (
-              <button className="te-btn te-btn-del" onClick={handleDelete} disabled={submitting}>Delete</button>
+            {getHolidayName(selectedDate) && (
+              <span style={{ marginLeft: 8, fontSize: 12, color: '#e53e3e', fontWeight: 500 }}>{getHolidayName(selectedDate)}</span>
             )}
-            <button className="te-btn te-btn-save" onClick={handleSave} disabled={submitting || preview.net <= 0}>
-              {submitting ? 'Saving...' : currentEntry ? 'Update' : 'Log Hours'}
-            </button>
           </div>
+
+          {isClosed ? (
+            <p className="text-muted" style={{ marginTop: 8 }}>This period is closed. Contact your admin to make changes.</p>
+          ) : (
+            <>
+              <div className="te-time-row">
+                <div className="te-time-block">
+                  <label className="te-time-label">IN</label>
+                  <input type="time" className="te-time-input" value={startTime} onChange={e => setStartTime(e.target.value)} />
+                </div>
+                <div className="te-time-arrow">&rarr;</div>
+                <div className="te-time-block">
+                  <label className="te-time-label">OUT</label>
+                  <input type="time" className="te-time-input" value={endTime} onChange={e => setEndTime(e.target.value)} />
+                </div>
+              </div>
+
+              {preview.net > 0 && (
+                <div className="te-hours-bar">
+                  <strong>{formatHours(preview.net)}</strong>
+                  {preview.breakMin > 0 && (
+                    <span className="te-hours-detail">
+                      {formatHours(preview.gross)} &minus; {preview.breakMin}m lunch
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {error && <p className="te-error">{error}</p>}
+
+              <div className="te-actions">
+                {currentEntry && (
+                  <button className="te-btn te-btn-del" onClick={handleDelete} disabled={submitting}>Delete</button>
+                )}
+                <button className="te-btn te-btn-save" onClick={handleSave} disabled={submitting || preview.net <= 0}>
+                  {submitting ? 'Saving...' : currentEntry ? 'Update' : 'Log Hours'}
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>

@@ -138,25 +138,28 @@ export default function AppAccess() {
   return (
     <div style={{ padding: '16px 0' }}>
       <h1 style={{ fontSize: 20, fontWeight: 600, marginBottom: 8 }}>App Access</h1>
-      <p style={{ fontSize: 13, color: '#888', marginBottom: 20 }}>
+      <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>
         Manage which apps each team member can access.
       </p>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid #e5e5e5', marginBottom: 20 }}>
+      <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid var(--border)', marginBottom: 20 }}>
         {[{ id: 'users', label: 'Per User' }, { id: 'roles', label: 'Role Defaults' }].map(t => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
             style={{
-              padding: '8px 16px',
-              fontSize: 13,
-              fontWeight: 500,
+              padding: '10px 20px',
+              fontSize: 14,
+              fontWeight: 400,
               border: 'none',
               background: 'none',
               cursor: 'pointer',
-              borderBottom: tab === t.id ? '2px solid var(--accent, #f5a623)' : '2px solid transparent',
-              color: tab === t.id ? '#1a1a1a' : '#888',
+              position: 'relative',
+              borderBottom: tab === t.id ? '2px solid #ffcc00' : '2px solid transparent',
+              color: tab === t.id ? 'var(--text)' : 'var(--text-muted)',
+              transition: 'color 0.15s',
+              fontFamily: 'inherit',
             }}
           >
             {t.label}
@@ -181,7 +184,7 @@ export default function AppAccess() {
                 <tr key={emp.id}>
                   <td style={tdStyle}>{emp.full_name}</td>
                   <td style={tdStyle}>
-                    <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, color: '#888' }}>
+                    <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, color: 'var(--text-muted)' }}>
                       {emp.role || 'employee'}
                     </span>
                   </td>
@@ -199,8 +202,8 @@ export default function AppAccess() {
                             width: 28,
                             height: 28,
                             borderRadius: 6,
-                            border: isOverride ? '2px solid #f5a623' : '1px solid #ddd',
-                            background: access ? (isOverride ? '#fff8e7' : '#e8f5e9') : '#fff',
+                            border: isOverride ? '2px solid var(--accent)' : '1px solid var(--border)',
+                            background: access ? (isOverride ? 'var(--accent-light)' : 'rgba(34, 197, 94, 0.15)') : 'var(--bg-card)',
                             cursor: isAdminRole ? 'default' : 'pointer',
                             fontSize: 14,
                             opacity: isSaving ? 0.5 : 1,
@@ -220,7 +223,7 @@ export default function AppAccess() {
               ))}
             </tbody>
           </table>
-          <p style={{ fontSize: 11, color: '#aaa', marginTop: 12 }}>
+          <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 12 }}>
             Gold border = per-user override. Right-click to reset to role default.
           </p>
         </div>
@@ -241,7 +244,7 @@ export default function AppAccess() {
               {ROLES.map(role => (
                 <tr key={role}>
                   <td style={tdStyle}>
-                    <span style={{ textTransform: 'capitalize', fontWeight: 500 }}>{role}</span>
+                    <span style={{ textTransform: 'capitalize', fontWeight: 500, color: 'var(--text)' }}>{role}</span>
                   </td>
                   {APP_SLUGS.map(a => {
                     const access = getRoleDefault(role, a.slug)
@@ -273,7 +276,7 @@ export default function AppAccess() {
               ))}
             </tbody>
           </table>
-          <p style={{ fontSize: 11, color: '#aaa', marginTop: 12 }}>
+          <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 12 }}>
             These are the default permissions for each role. Per-user overrides take priority.
           </p>
         </div>
@@ -285,15 +288,15 @@ export default function AppAccess() {
 const thStyle = {
   textAlign: 'left',
   padding: '8px 10px',
-  borderBottom: '1px solid #e5e5e5',
+  borderBottom: '1px solid var(--border)',
   fontSize: 11,
   fontWeight: 600,
   textTransform: 'uppercase',
   letterSpacing: 1,
-  color: '#888',
+  color: 'var(--text-muted)',
 }
 
 const tdStyle = {
   padding: '10px 10px',
-  borderBottom: '1px solid #f0f0f0',
+  borderBottom: '1px solid var(--border)',
 }

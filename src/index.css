@@ -29,6 +29,140 @@
   --font: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
+
+/* ── Dark Mode ──────────────────────────────────────────── */
+[data-theme="dark"] {
+  --bg: #1a1a1a;
+  --bg-card: #2a2a2a;
+  --bg-input: #333333;
+  --bg-hover: #3a3a3a;
+
+  --text: #e0e0e0;
+  --text-secondary: #aaaaaa;
+  --text-muted: #777777;
+
+  --border: #404040;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] html,
+[data-theme="dark"] {
+  background: var(--bg);
+  color: var(--text);
+}
+
+[data-theme="dark"] a {
+  color: var(--text);
+}
+
+[data-theme="dark"] .bottom-nav {
+  background: #222222;
+  border-color: var(--border);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .avatar-menu {
+  background: #333333;
+  border-color: var(--border);
+}
+
+[data-theme="dark"] .btn {
+  color: var(--text);
+}
+
+[data-theme="dark"] .btn-primary {
+  color: #1a1a1a;
+}
+
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background: var(--bg-input);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+[data-theme="dark"] .card-title {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .bottom-nav-item {
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .bottom-nav-item.active {
+  color: #ffffff;
+}
+
+[data-theme="dark"] .admin-emp-title-pill {
+  background: rgba(147, 51, 234, 0.2);
+  color: #c084fc;
+}
+
+[data-theme="dark"] .emp-type-badge.hourly { background: rgba(59, 130, 246, 0.15); color: #93c5fd; }
+[data-theme="dark"] .emp-type-badge.salary { background: rgba(34, 197, 94, 0.15); color: #86efac; }
+[data-theme="dark"] .emp-type-badge.contract { background: rgba(245, 158, 11, 0.15); color: #fcd34d; }
+[data-theme="dark"] .emp-type-badge.intern { background: rgba(139, 92, 246, 0.15); color: #c4b5fd; }
+
+[data-theme="dark"] .te-period-status { opacity: 0.9; }
+[data-theme="dark"] .te-entry-badge { opacity: 0.9; }
+[data-theme="dark"] .sched-emp-pill { color: var(--text-muted); }
+
+/* Dark mode: schedule */
+[data-theme="dark"] .sched-today-col {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+[data-theme="dark"] .sched-name-col {
+  background: var(--bg-card);
+}
+[data-theme="dark"] .sched-grid th {
+  background: var(--bg-card);
+}
+[data-theme="dark"] .cal-cell.cal-scheduled {
+  background: #1e293b;
+}
+[data-theme="dark"] .swatch-scheduled {
+  background: #1e293b;
+  border-color: #334155;
+}
+[data-theme="dark"] .swatch-logged {
+  background: #14532d;
+  border-color: #166534;
+}
+
+/* Dark mode: schedule page */
+[data-theme="dark"] .schedule-editor {
+  background: var(--bg-card);
+}
+[data-theme="dark"] .schedule-day-chip {
+  background: var(--bg-input);
+  color: var(--text);
+  border-color: var(--border);
+}
+[data-theme="dark"] .schedule-day-chip.active {
+  background: var(--accent);
+  color: #1a1a1a;
+}
+[data-theme="dark"] .sched-toggle-btn {
+  background: var(--bg-card);
+  color: var(--text-secondary);
+}
+[data-theme="dark"] .sched-toggle-btn.active {
+  background: var(--accent);
+  color: #1a1a1a;
+}
+[data-theme="dark"] .sched-grid td {
+  border-color: var(--border);
+}
+[data-theme="dark"] .sched-grid th {
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+[data-theme="dark"] .cal-cell {
+  background: var(--bg-card);
+  border-color: var(--border);
+}
+
 /* Reset */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -58,31 +192,167 @@ a { color: var(--accent-text); text-decoration: none; }
 .app-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 14px 20px;
-  background: var(--text);
-  color: #fff;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  background: #000000;
   position: sticky;
   top: 0;
   z-index: 100;
 }
 
-.app-brand {
-  font-weight: 700;
-  font-size: 14px;
-  letter-spacing: 2px;
-  color: var(--accent);
+.header-col {
+  flex: 1;
 }
 
-.app-title {
-  font-size: 14px;
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.header-center {
+  text-align: center;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.header-logo {
+  height: 32px;
+  width: auto;
+  filter: brightness(0) invert(1);
+}
+
+.header-app-name {
+  font-size: 1.125rem;
   font-weight: 400;
-  opacity: 0.7;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: 0;
+}
+
+/* ── Theme Toggle Pill ──────────────────────────────────── */
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.theme-toggle-icon {
+  font-size: 13px;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.theme-toggle-track {
+  width: 32px;
+  height: 18px;
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.15);
+  position: relative;
+}
+
+.theme-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffcc00;
+  transition: left 0.2s ease;
+}
+
+.theme-toggle-thumb.dark {
+  left: 16px;
+}
+
+/* ── Avatar & Sign Out ──────────────────────────────────── */
+
+.avatar-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-left: 0.75rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+}
+
+.avatar-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-btn:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-initials-btn {
+  background: rgba(255, 255, 255, 0.15);
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: inherit;
+}
+
+.avatar-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  min-width: 120px;
+  overflow: hidden;
+  animation: fadeIn 0.15s ease;
+}
+
+.avatar-menu-item {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 1rem;
+  background: none;
+  border: none;
+  font-size: 0.85rem;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.avatar-menu-item:hover {
+  background: var(--bg-hover);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .app-main {
   flex: 1;
-  padding: 16px;
+  padding: 24px 16px;
   padding-bottom: 80px;
 }
 
@@ -2028,19 +2298,25 @@ a { color: var(--accent-text); text-decoration: none; }
   .te-time-input { font-size: 20px; padding: 14px 10px; }
 }
 
-@media (min-width: 960px) {
+@media (min-width: 750px) {
   /* Remove narrow column — go full width */
   .app-shell {
     max-width: none;
     margin-left: 200px;
+    padding-top: 52px;
     border-left: none;
     border-right: none;
     box-shadow: none;
   }
 
-  /* Header adjusts for sidebar */
+  /* Header spans full width at desktop, fixed on top */
   .app-header {
-    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 300;
+    margin-left: 0;
   }
 
   .app-main {
@@ -2051,12 +2327,11 @@ a { color: var(--accent-text); text-decoration: none; }
   /* Sidebar nav */
   .bottom-nav {
     position: fixed;
-    top: 0;
+    top: 52px;
     left: 0;
     bottom: 0;
     width: 200px;
     max-width: 200px;
-    height: 100vh;
     flex-direction: column;
     border-bottom: none;
     border-right: 1px solid var(--border);
@@ -2068,22 +2343,9 @@ a { color: var(--accent-text); text-decoration: none; }
     overflow-y: auto;
   }
 
-  /* Brand in sidebar */
+  /* Brand in sidebar - hidden, using header instead */
   .sidebar-brand {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 20px 16px;
-    border-bottom: 1px solid var(--border);
-    background: var(--text);
-  }
-
-  .sidebar-brand .app-brand {
-    font-size: 15px;
-  }
-
-  .sidebar-brand .app-title {
-    font-size: 12px;
+    display: none;
   }
 
   /* Nav items in sidebar */

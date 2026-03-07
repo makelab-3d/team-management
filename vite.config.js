@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/.netlify/functions': {
-        target: 'http://localhost:9999',
+        target: 'https://teammanagement.makelab.com',
         changeOrigin: true,
       },
     },
