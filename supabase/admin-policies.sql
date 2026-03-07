@@ -80,3 +80,17 @@ CREATE POLICY "admin_update_all_time_entries" ON time_entries
   FOR UPDATE USING (
     auth.jwt()->>'email' = 'christina@makelab.com'
   );
+
+-- Admin can INSERT time entries for any employee
+DROP POLICY IF EXISTS "admin_insert_all_time_entries" ON time_entries;
+CREATE POLICY "admin_insert_all_time_entries" ON time_entries
+  FOR INSERT WITH CHECK (
+    auth.jwt()->>'email' = 'christina@makelab.com'
+  );
+
+-- Admin can DELETE time entries for any employee
+DROP POLICY IF EXISTS "admin_delete_all_time_entries" ON time_entries;
+CREATE POLICY "admin_delete_all_time_entries" ON time_entries
+  FOR DELETE USING (
+    auth.jwt()->>'email' = 'christina@makelab.com'
+  );
