@@ -12,14 +12,16 @@ export default function AdminApproval() {
   const [periodStats, setPeriodStats] = useState({}) // { periodId: { employees, hours, cost } }
   const [selectedPeriod, setSelectedPeriod] = useState(null)
   const [employeeData, setEmployeeData] = useState([])
+  const [allEmployees, setAllEmployees] = useState([]) // all hourly employees
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState(null)
   const [page, setPage] = useState(0)
   const [yearFilter, setYearFilter] = useState(null) // null = all
-  const [editingCell, setEditingCell] = useState(null) // { entryId, employeeName, date }
+  const [editingCell, setEditingCell] = useState(null) // { entryId, employeeName, date, employeeId, isNew }
   const [editForm, setEditForm] = useState({})
   const [sendingReminders, setSendingReminders] = useState(false)
   const [reminderResult, setReminderResult] = useState(null)
+  const [showAddEmployee, setShowAddEmployee] = useState(false)
 
   // Fetch periods + per-period stats
   const fetchPeriods = useCallback(async () => {
@@ -67,6 +69,17 @@ export default function AdminApproval() {
 
   useEffect(() => { fetchPeriods() }, [fetchPeriods])
 
+  // Fetch all hourly employees
+  const fetchAllEmployees = useCallback(async () => {
+    if (!supabase) return
+    const { data } = await supabase
+      .from('employees')
+      .select('id, full_name, rate, pay_type, employee_type')
+      .eq('employee_type', 'hourly')
+      .order('full_name', { ascending: true })
+    setAllEmployees(data || [])
+  }, [])
+
   // Fetch employee timesheets for selected period
   const fetchEmployeeData = useCallback(async () => {
     if (!supabase || !selectedPeriod) return
@@ -103,7 +116,7 @@ export default function AdminApproval() {
     setEmployeeData(Object.values(byEmployee))
   }, [selectedPeriod])
 
-  useEffect(() => { fetchEmployeeData() }, [fetchEmployeeData])
+  useEffect(() => { fetchEmployeeData(); fetchAllEmployees() }, [fetchEmployeeData, fetchAllEmployees])
 
   async function handleClose() {
     setMessage(null)
@@ -169,13 +182,41 @@ export default function AdminApproval() {
   }
 
   function openCellEdit(entry, employeeName, date) {
-    setEditingCell({ entryId: entry.id, employeeName, date })
+    setEditingCell({ entryId: entry.id, employeeName, date, isNew: false })
     setEditForm({
       start_time: entry.start_time || '',
       end_time: entry.end_time || '',
       break_minutes: entry.break_minutes ?? '',
     })
     setMessage(null)
+  }
+
+  function openNewCellEdit(employeeId, employeeName, date) {
+    setEditingCell({ employeeId, employeeName, date, isNew: true })
+    setEditForm({
+      start_time: '09:00',
+      end_time: '17:00',
+      break_minutes: 60,
+    })
+    setMessage(null)
+  }
+
+  async function handleAddEmployee(emp) {
+    // Add employee to the view with empty entries
+    setEmployeeData(prev => {
+      if (prev.find(e => e.employee_id === emp.id)) return prev
+      return [...prev, {
+        employee_id: emp.id,
+        full_name: emp.full_name,
+        rate: Number(emp.rate || 0),
+        pay_type: emp.pay_type || 'W2',
+        total_hours: 0,
+        gross_amount: 0,
+        entries: [],
+        byDate: {},
+      }]
+    })
+    setShowAddEmployee(false)
   }
 
   async function saveCellEdit() {
@@ -187,18 +228,35 @@ export default function AdminApproval() {
       const breakMin = Number(editForm.break_minutes) || 0
       const net = Math.max(0, gross - breakMin / 60)
 
-      const { error } = await supabase
-        .from('time_entries')
-        .update({
-          start_time: editForm.start_time,
-          end_time: editForm.end_time,
-          break_minutes: breakMin,
-          gross_hours: Math.round(gross * 100) / 100,
-          net_hours: Math.round(net * 100) / 100,
-        })
-        .eq('id', editingCell.entryId)
-      if (error) throw error
-      setMessage({ type: 'success', text: 'Updated' })
+      if (editingCell.isNew) {
+        const { error } = await supabase
+          .from('time_entries')
+          .insert({
+            employee_id: editingCell.employeeId,
+            pay_period_id: selectedPeriod.id,
+            work_date: editingCell.date,
+            start_time: editForm.start_time,
+            end_time: editForm.end_time,
+            break_minutes: breakMin,
+            gross_hours: Math.round(gross * 100) / 100,
+            net_hours: Math.round(net * 100) / 100,
+          })
+        if (error) throw error
+        setMessage({ type: 'success', text: 'Entry created' })
+      } else {
+        const { error } = await supabase
+          .from('time_entries')
+          .update({
+            start_time: editForm.start_time,
+            end_time: editForm.end_time,
+            break_minutes: breakMin,
+            gross_hours: Math.round(gross * 100) / 100,
+            net_hours: Math.round(net * 100) / 100,
+          })
+          .eq('id', editingCell.entryId)
+        if (error) throw error
+        setMessage({ type: 'success', text: 'Updated' })
+      }
       setEditingCell(null)
       fetchEmployeeData()
     } catch (err) {
@@ -283,8 +341,11 @@ export default function AdminApproval() {
                       return (
                         <td
                           key={d}
-                          className={entry ? 'has-hours cell-clickable' : ''}
-                          onClick={entry ? () => openCellEdit(entry, emp.full_name, d) : undefined}
+                          className={`cell-clickable${entry ? ' has-hours' : ''}`}
+                          onClick={entry
+                            ? () => openCellEdit(entry, emp.full_name, d)
+                            : () => openNewCellEdit(emp.employee_id, emp.full_name, d)
+                          }
                         >
                           {entry ? (
                             <div className="cell-hours">
@@ -295,7 +356,7 @@ export default function AdminApproval() {
                               <span className="cell-times">{formatTime12(entry.start_time)}-{formatTime12(entry.end_time)}</span>
                             </div>
                           ) : (
-                            <span className="cell-empty">&mdash;</span>
+                            <span className="cell-empty cell-add-hint">+</span>
                           )}
                         </td>
                       )
@@ -309,11 +370,43 @@ export default function AdminApproval() {
           </div>
         )}
 
+        {/* Add employee button */}
+        <div style={{ marginTop: 12, position: 'relative' }}>
+          <button
+            className="btn btn-sm"
+            style={{ background: 'var(--muted)', color: 'var(--text)' }}
+            onClick={() => setShowAddEmployee(!showAddEmployee)}
+          >
+            + Add Employee
+          </button>
+          {showAddEmployee && (() => {
+            const existingIds = new Set(employeeData.map(e => e.employee_id))
+            const available = allEmployees.filter(e => !existingIds.has(e.id))
+            return (
+              <div className="card" style={{ position: 'absolute', zIndex: 10, top: '100%', left: 0, marginTop: 4, maxHeight: 240, overflowY: 'auto', minWidth: 220, padding: 0 }}>
+                {available.length === 0 ? (
+                  <div style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>All hourly employees are already listed</div>
+                ) : available.map(emp => (
+                  <div
+                    key={emp.id}
+                    onClick={() => handleAddEmployee(emp)}
+                    style={{ padding: '10px 16px', cursor: 'pointer', borderBottom: '1px solid var(--border)' }}
+                    className="cell-clickable"
+                  >
+                    <div style={{ fontWeight: 500 }}>{emp.full_name}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>${Number(emp.rate).toFixed(2)}/hr</div>
+                  </div>
+                ))}
+              </div>
+            )
+          })()}
+        </div>
+
         {/* Edit panel */}
         {editingCell && (
           <div className="card mt-12">
             <div className="card-title">
-              Edit: {editingCell.employeeName} &mdash; {formatDayShort(editingCell.date)}
+              {editingCell.isNew ? 'Add' : 'Edit'}: {editingCell.employeeName} &mdash; {formatDayShort(editingCell.date)}
             </div>
             <div className="input-row" style={{ marginBottom: 8 }}>
               <div>
@@ -344,7 +437,7 @@ export default function AdminApproval() {
             })()}
             <div className="edit-actions">
               <button className="btn btn-ghost btn-sm" onClick={() => setEditingCell(null)}>Cancel</button>
-              <button className="btn btn-primary btn-sm" onClick={saveCellEdit}>Save</button>
+              <button className="btn btn-primary btn-sm" onClick={saveCellEdit}>{editingCell.isNew ? 'Add Entry' : 'Save'}</button>
             </div>
           </div>
         )}
