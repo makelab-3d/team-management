@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { getHolidayName } from '../lib/holidays'
 
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const DEPT_COLOR_MAP = {
@@ -116,6 +117,7 @@ export default function Schedule() {
   })
 
   function isScheduledOn(emp, dateStr) {
+    if (getHolidayName(dateStr)) return false
     const sched = emp.schedule || { days: [1, 2, 3, 4, 5] }
     const dayNum = new Date(dateStr + 'T00:00:00').getDay()
     return (sched.days || []).includes(dayNum)
@@ -185,12 +187,16 @@ export default function Schedule() {
                   <th className="sched-dept-col" />
                   <th className="sched-name-col">Employee</th>
                   <th className="sched-title-col">Title</th>
-                  {weekDates.map((d, i) => (
-                    <th key={d} className={d === todayStr ? 'sched-today-col' : ''}>
-                      <div>{DAY_LABELS[i]}</div>
-                      <div className="sched-th-date">{new Date(d + 'T00:00:00').getDate()}</div>
-                    </th>
-                  ))}
+                  {weekDates.map((d, i) => {
+                    const hName = getHolidayName(d)
+                    return (
+                      <th key={d} className={`${d === todayStr ? 'sched-today-col' : ''}${hName ? ' cell-holiday' : ''}`} title={hName || undefined}>
+                        <div>{DAY_LABELS[i]}</div>
+                        <div className="sched-th-date">{new Date(d + 'T00:00:00').getDate()}</div>
+                        {hName && <div style={{ fontSize: 9, color: '#e53e3e', fontWeight: 500, marginTop: 2 }}>{hName}</div>}
+                      </th>
+                    )
+                  })}
                 </tr>
               </thead>
               <tbody>
@@ -229,6 +235,9 @@ export default function Schedule() {
         <>
           <div className="sched-week-label">
             {DAY_LABELS[dailyDow]}, {formatDateShort(selectedDate)}
+            {getHolidayName(selectedDate) && (
+              <span style={{ marginLeft: 8, fontSize: 13, color: '#e53e3e', fontWeight: 500 }}>{getHolidayName(selectedDate)}</span>
+            )}
           </div>
           <div className="sched-daily-summary">
             <strong>{dailyWorkers.length}</strong> scheduled
