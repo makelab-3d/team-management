@@ -155,6 +155,16 @@
 [data-theme="dark"] .sched-grid td {
   border-color: var(--border);
 }
+[data-theme="dark"] .sched-grid tbody tr {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+[data-theme="dark"] .sched-grid tbody td,
+[data-theme="dark"] .sched-dept-label {
+  background: transparent !important;
+}
+[data-theme="dark"] .sched-grid tbody td.sched-today-col {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
 [data-theme="dark"] .sched-grid th {
   border-color: var(--border);
   color: var(--text-muted);
