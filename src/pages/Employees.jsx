@@ -9,16 +9,6 @@ const ROLES = ['employee', 'manager', 'admin']
 
 export default function Employees() {
   const { isAdmin, isManager } = useAuth()
-
-  // Only admin and manager can view this page
-  if (!isAdmin && !isManager) {
-    return (
-      <div className="card text-center mt-16">
-        <h2>Access Denied</h2>
-        <p className="text-muted">You don't have permission to view the employee list.</p>
-      </div>
-    )
-  }
   const canSeePay = isAdmin // managers cannot see pay info
   const [employees, setEmployees] = useState([])
   const [loading, setLoading] = useState(true)
@@ -61,6 +51,16 @@ export default function Employees() {
   }, [])
 
   useEffect(() => { fetchEmployees() }, [fetchEmployees])
+
+  // Only admin and manager can view this page — guard after hooks
+  if (!isAdmin && !isManager) {
+    return (
+      <div className="card text-center mt-16">
+        <h2>Access Denied</h2>
+        <p className="text-muted">You don't have permission to view the employee list.</p>
+      </div>
+    )
+  }
 
   async function getAuthToken() {
     const { data } = await supabase.auth.getSession()

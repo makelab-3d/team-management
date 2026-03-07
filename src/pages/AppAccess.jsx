@@ -19,8 +19,15 @@ const ROLES = ['admin', 'manager', 'employee']
 
 export default function AppAccess() {
   const { isAdmin, user } = useAuth()
+  const [employees, setEmployees] = useState([])
+  const [permissions, setPermissions] = useState([])
+  const [defaults, setDefaults] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(null)
+  const [tab, setTab] = useState('users')
+  const [error, setError] = useState(null)
 
-  // Admin only
+  // Admin only — guard after hooks
   if (!isAdmin) {
     return (
       <div className="card text-center mt-16">
@@ -29,13 +36,6 @@ export default function AppAccess() {
       </div>
     )
   }
-  const [employees, setEmployees] = useState([])
-  const [permissions, setPermissions] = useState([])
-  const [defaults, setDefaults] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(null)
-  const [tab, setTab] = useState('users')
-  const [error, setError] = useState(null)
 
   useEffect(() => {
     if (isAdmin) loadData()

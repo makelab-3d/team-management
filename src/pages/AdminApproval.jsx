@@ -9,16 +9,6 @@ const PAGE_SIZE = 5
 
 export default function AdminApproval() {
   const { employee, isAdmin } = useAuth()
-
-  // Admin only
-  if (!isAdmin) {
-    return (
-      <div className="card text-center mt-16">
-        <h2>Access Denied</h2>
-        <p className="text-muted">Only admins can view timesheets.</p>
-      </div>
-    )
-  }
   const [periods, setPeriods] = useState([])
   const [periodStats, setPeriodStats] = useState({}) // { periodId: { employees, hours, cost } }
   const [selectedPeriod, setSelectedPeriod] = useState(null)
@@ -33,6 +23,16 @@ export default function AdminApproval() {
   const [sendingReminders, setSendingReminders] = useState(false)
   const [reminderResult, setReminderResult] = useState(null)
   const [showAddEmployee, setShowAddEmployee] = useState(false)
+
+  // Admin only — guard after hooks to avoid conditional hook calls
+  if (!isAdmin) {
+    return (
+      <div className="card text-center mt-16">
+        <h2>Access Denied</h2>
+        <p className="text-muted">Only admins can view timesheets.</p>
+      </div>
+    )
+  }
 
   // Fetch periods + per-period stats
   const fetchPeriods = useCallback(async () => {
